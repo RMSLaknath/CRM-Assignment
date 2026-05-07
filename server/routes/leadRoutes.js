@@ -7,6 +7,7 @@ import {
   getLeadById,
   updateLead,
   deleteLead,
+  updateLeadStatus,
 } from "../controllers/leadController.js";
 
 const router = express.Router();
@@ -22,6 +23,9 @@ router.get("/:id", protect, getLeadById);
 
 // UPDATE
 router.put("/:id", protect, updateLead);
+
+// UPDATE STATUS
+router.patch("/:id/status", protect, updateLeadStatus);
 
 // DELETE
 router.delete("/:id", protect, deleteLead);

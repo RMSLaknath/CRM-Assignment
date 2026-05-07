@@ -16,7 +16,48 @@ export const createLead = async (req, res) => {
 // GET ALL LEADS
 export const getLeads = async (req, res) => {
   try {
-    const leads = await Lead.find().sort({ createdAt: -1 });
+    const { status, source, assignedTo, search } = req.query;
+
+    let filter = {};
+
+    // FILTERS
+    if (status) {
+      filter.status = status;
+    }
+
+    if (source) {
+      filter.source = source;
+    }
+
+    if (assignedTo) {
+      filter.assignedTo = assignedTo;
+    }
+
+    // SEARCH
+    if (search) {
+      filter.$or = [
+        {
+          name: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          company: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    const leads = await Lead.find(filter).sort({ createdAt: -1 });
 
     res.json(leads);
   } catch (error) {
@@ -53,6 +94,25 @@ export const updateLead = async (req, res) => {
     });
 
     res.json(updatedLead);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const updateLeadStatus = async (req, res) => {
+  try {
+    const lead = await Lead.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: req.body.status,
+      },
+      {
+        new: true,
+      },
+    );
+
+    res.json(lead);
   } catch (error) {
     res.status(500).json({
       message: error.message,
