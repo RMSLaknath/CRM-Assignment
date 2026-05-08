@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Layout from "../components/layout/Layout";
 import StatCard from "../components/dashboard/StatCard";
+
 import { getDashboardStats } from "../api/dashboardApi";
 
 import {
@@ -18,6 +21,8 @@ import {
 export default function Dashboard() {
   const [stats, setStats] = useState({});
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -31,7 +36,14 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  // mock fallback data (replace later with backend analytics)
+  /* LOGOUT */
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+
+    navigate("/");
+  };
+
+  /* CHART DATA */
   const leadData = [
     { name: "New", value: stats.newLeads || 0 },
     { name: "Won", value: stats.wonLeads || 0 },
@@ -49,21 +61,30 @@ export default function Dashboard() {
     <Layout>
       {/* HEADER */}
       <div className="header">
-        <h1>Dashboard</h1>
-        <p>Overview of your CRM performance</p>
+        <div>
+          <h1>Dashboard</h1>
+          <p>Overview of your CRM performance</p>
+        </div>
+
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
 
       {/* KPI CARDS */}
       <div className="grid-4">
         <StatCard title="Total Leads" value={stats.totalLeads || 0} />
+
         <StatCard title="New Leads" value={stats.newLeads || 0} />
+
         <StatCard title="Won Leads" value={stats.wonLeads || 0} />
+
         <StatCard title="Lost Leads" value={stats.lostLeads || 0} />
       </div>
 
-      {/* CHART SECTION */}
+      {/* CHARTS */}
       <div className="chart-grid">
-        {/* LEADS BAR CHART */}
+        {/* BAR CHART */}
         <div className="card">
           <h3>Leads Distribution</h3>
 
@@ -77,16 +98,20 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* REVENUE LINE CHART */}
+        {/* LINE CHART */}
         <div className="card">
           <h3>Revenue Trend</h3>
 
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" />
+
               <XAxis dataKey="name" />
+
               <YAxis />
+
               <Tooltip />
+
               <Line
                 type="monotone"
                 dataKey="revenue"
@@ -104,6 +129,7 @@ export default function Dashboard() {
           title="Total Deal Value"
           value={`$${stats.totalDealValue || 0}`}
         />
+
         <StatCard title="Won Revenue" value={`$${stats.wonDealValue || 0}`} />
       </div>
 
@@ -111,15 +137,36 @@ export default function Dashboard() {
       <style>
         {`
           .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
           }
 
           .header h1 {
             margin: 0;
+            font-size: 28px;
           }
 
           .header p {
+            margin-top: 5px;
             color: #6b7280;
+          }
+
+          .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+          }
+
+          .logout-btn:hover {
+            background: #dc2626;
           }
 
           .grid-4 {
@@ -146,8 +193,8 @@ export default function Dashboard() {
           .card {
             background: white;
             padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
           }
 
           .card h3 {
@@ -161,6 +208,14 @@ export default function Dashboard() {
 
             .chart-grid {
               grid-template-columns: 1fr;
+            }
+          }
+
+          @media (max-width: 768px) {
+            .header {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 12px;
             }
           }
 
